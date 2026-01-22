@@ -8,7 +8,6 @@ bool validUtf8(int* data, int dataSize) {
     while (i < dataSize) {
         unsigned b0 = (unsigned)data[i] & 0xFFu;
 
-        // Micro-opt: common ASCII fast path
         //For a 1-byte character, the first bit is a 0, followed by its Unicode code.
         if (b0 < 0x80u) {
             ++i;
