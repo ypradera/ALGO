@@ -51,18 +51,115 @@ LIMITATIONS:
  * 2. Tie-breaker: If start times equal, sort by end time (ascending)
  *
  * PARAMETERS:
- * @param a - Pointer to an element in intervals array (type: int**)
- * @param b - Pointer to another element in intervals array (type: int**)
+ * @param a - Pointer to an element in intervals array (type: void*)
+ * @param b - Pointer to another element in intervals array (type: void*)
  *
  * RETURN VALUES:
  * -1 : interval 'a' should come before 'b'
  *  0 : intervals are equal
  *  1 : interval 'b' should come before 'a'
+ *
+ * ============================================================================
+ * DETAILED EXPLANATION OF POINTER DEREFERENCING AND qsort()
+ * ============================================================================
+ *
+ * HOW qsort() CALLS THIS FUNCTION:
+ *
+ * When we call: qsort(intervals, size, sizeof(int*), cmpIntPtrRows)
+ *
+ * qsort() passes POINTERS to the elements being compared.
+ * Since each element in 'intervals' is already a pointer (int*),
+ * we receive POINTERS TO POINTERS (int**).
+ *
+ * MEMORY LAYOUT:
+ *
+ * intervals array:    [ptr0] [ptr1] [ptr2] [ptr3]   <-- Array of int* pointers
+ *                       |      |      |      |
+ *                       v      v      v      v
+ * Actual intervals:   [1,3] [2,6] [8,10] [15,18]   <-- Arrays of 2 ints
+ *
+ * When qsort compares intervals[0] and intervals[1]:
+ * - It passes &intervals[0] and &intervals[1] to our function
+ * - These are addresses of the pointers (type: int**)
+ * - But qsort declares them as (void*) for genericity
+ *
+ * STEP-BY-STEP DEREFERENCING:
+ *
+ * Step 1: qsort calls cmpIntPtrRows(&intervals[0], &intervals[1])
+ *         - a receives address of intervals[0]  (type: void*, really int**)
+ *         - b receives address of intervals[1]  (type: void*, really int**)
+ *
+ * Step 2: Cast void* to int**
+ *         (const int * const *)a
+ *         This tells compiler: "a points to a const pointer to const int"
+ *
+ * Step 3: Dereference to get int*
+ *         *(const int * const *)a
+ *         This gives us intervals[0], which points to [1,3]
+ *
+ * VISUAL BREAKDOWN:
+ *
+ * void* a               -->  Cast to (int**)  -->  Dereference to get int*
+ * points to             -->  interprets as    -->  accesses the value
+ * &intervals[0]         -->  pointer to int*  -->  intervals[0] = ptr to [1,3]
+ *
+ * TYPE TRANSFORMATION:
+ *
+ * Original:  void* a
+ *            ↓
+ * Cast:      (const int * const *)a     // "pointer to (const pointer to const int)"
+ *            ↓
+ * Deref:     *(const int * const *)a    // "const pointer to const int" = int*
+ *            ↓
+ * Result:    const int *ra               // Points to first element of interval
+ *
+ * WHY const int * const *?
+ *
+ * - Outer const: We won't modify what ra points to (the interval values)
+ * - Inner const: We won't modify the pointer itself
+ * - This matches the type of intervals[i] which is a pointer to constant data
+ *
+ * EXAMPLE WITH ACTUAL VALUES:
+ *
+ * If intervals[0] points to array [1, 3] at address 0x1000:
+ *
+ * &intervals[0] = 0x5000  (address where intervals[0] is stored)
+ * intervals[0]  = 0x1000  (value stored at intervals[0], points to [1,3])
+ *
+ * In comparison function:
+ * a              = 0x5000  (passed by qsort)
+ * (int**)a       = 0x5000  (cast to correct type)
+ * *(int**)a      = 0x1000  (dereference: now we have intervals[0])
+ * ra             = 0x1000  (points to [1,3])
+ * ra[0]          = 1       (first element of interval)
+ * ra[1]          = 3       (second element of interval)
  */
 static int cmpIntPtrRows(const void *a, const void *b) {
-    // a and b point to elements of the intervals array (each element is int*)
+    /*
+     * COMPLEX POINTER DEREFERENCING EXPLAINED:
+     *
+     * The line below performs TWO operations:
+     * 1. Cast: (const int * const *)a  - Reinterpret void* as int**
+     * 2. Dereference: *(...) - Get the int* value stored at that address
+     *
+     * Why this complexity?
+     * - qsort works with void* for genericity (works with any type)
+     * - Our array is int** (array of pointers)
+     * - qsort passes &intervals[i] (address of a pointer)
+     * - We need to dereference to get intervals[i] (the pointer itself)
+     */
+
+    // Step 1: Cast void* to int**, then dereference to get int* (pointer to interval)
     const int *ra = *(const int * const *)a;  // row a: dereference to get int*
     const int *rb = *(const int * const *)b;  // row b: dereference to get int*
+
+    /*
+     * Now ra and rb point to the actual interval arrays:
+     * ra[0] = start time of interval a
+     * ra[1] = end time of interval a
+     * rb[0] = start time of interval b
+     * rb[1] = end time of interval b
+     */
 
     // Compare start times first
     if (ra[0] < rb[0]) return -1;
@@ -124,6 +221,49 @@ int** mergeHighDefinitionIntervals(int intervals_rows,
 
     // PHASE 1: SORT INTERVALS IN-PLACE
     // Sort the array of pointers by comparing the intervals they point to
+    /*
+     * qsort() CALL EXPLANATION:
+     *
+     * qsort(intervals, intervals_rows, sizeof(int*), cmpIntPtrRows)
+     *
+     * Parameter 1: intervals
+     *   - Base address of array to sort
+     *   - Type: int** (array of pointers to int[2])
+     *
+     * Parameter 2: intervals_rows
+     *   - Number of elements in the array
+     *   - Each element is one interval (pointer to int[2])
+     *
+     * Parameter 3: sizeof(int*)
+     *   - Size of EACH ELEMENT in the array
+     *   - Since each element is a pointer (int*), we use sizeof(int*)
+     *   - NOT sizeof(int[2]) because we're sorting the POINTERS, not the arrays
+     *
+     * Parameter 4: cmpIntPtrRows
+     *   - Comparison function
+     *   - qsort will call this with &intervals[i] and &intervals[j]
+     *   - These are addresses of pointers (type: int**)
+     *   - Our function casts them and dereferences to get the interval data
+     *
+     * HOW qsort WORKS:
+     *
+     * 1. qsort looks at intervals as a byte array
+     * 2. It divides it into chunks of size sizeof(int*) = 8 bytes (on 64-bit)
+     * 3. To compare chunk i and chunk j:
+     *    - It calls: cmpIntPtrRows(&intervals[i], &intervals[j])
+     *    - Passes addresses of the pointers being compared
+     * 4. Based on return value (-1, 0, 1), it reorders the pointers
+     * 5. This reordering happens IN-PLACE (no heap allocation)
+     *
+     * MEMORY BEFORE SORT:
+     * intervals: [ptr_to_[15,18]] [ptr_to_[8,10]] [ptr_to_[2,6]] [ptr_to_[1,3]]
+     *
+     * MEMORY AFTER SORT (pointers reordered):
+     * intervals: [ptr_to_[1,3]] [ptr_to_[2,6]] [ptr_to_[8,10]] [ptr_to_[15,18]]
+     *
+     * The actual interval arrays [1,3], [2,6], etc. STAY IN PLACE.
+     * Only the POINTERS to them get reordered.
+     */
     qsort(intervals, (size_t)intervals_rows, sizeof(int*), cmpIntPtrRows);
 
     // PHASE 2: MERGE IN-PLACE USING TWO-POINTER TECHNIQUE
