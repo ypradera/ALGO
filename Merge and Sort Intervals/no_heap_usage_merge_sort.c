@@ -311,9 +311,8 @@ int** mergeHighDefinitionIntervals(int intervals_rows,
         } else {
             // CASE 2: NO OVERLAP
             // Current interval doesn't overlap - start a new merged interval
-            write++;  // Move to next slot
-            intervals[write][0] = curS;  // Copy current interval
-            intervals[write][1] = curE;
+            ++write;  // Move to next slot
+            intervals[write] = intervals[read];  // Copy pointer to current interval
         }
     }
 
