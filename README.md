@@ -18,8 +18,9 @@ A comprehensive collection of algorithms and data structures implementations tai
 
 ### Linux Kernel & Driver Development (Linux_Kernel_Drivers/)
 
-Comprehensive guide for embedded Linux driver development:
+Comprehensive guide for embedded Linux driver development with 3 detailed files:
 
+**linux_drivers.c** - Core driver development:
 | Topic | Description |
 |-------|-------------|
 | Kernel Architecture | User space vs kernel space, driver types |
@@ -33,14 +34,41 @@ Comprehensive guide for embedded Linux driver development:
 | Memory Management | kmalloc, vmalloc, DMA allocation |
 | Sysfs Interface | Exposing attributes to user space |
 | Firmware Loading | request_firmware API |
-| Debugging | printk, dynamic debug, ftrace |
+
+**device_tree_overlays.c** - Device Tree & L4T:
+| Topic | Description |
+|-------|-------------|
+| Device Tree Syntax | Nodes, properties, phandles, compatible strings |
+| Overlay Structure | /plugin/, fragments, __overlay__ |
+| Driver Matching | How compatible string connects DT to drivers |
+| Compiling Overlays | dtc commands, decompiling DTBs |
+| Loading Methods | ConfigFS, U-Boot, extlinux.conf |
+| L4T (Jetson) | NVIDIA Jetson overlay loading, jetson-io tool |
+| Cross-Compilation | Building drivers for ARM64 from x86 host |
+| Complete Examples | I2C sensor overlay + matching driver |
+
+**driver_debugging.c** - Debugging techniques:
+| Topic | Description |
+|-------|-------------|
+| printk / pr_* / dev_* | Kernel logging with log levels |
+| Dynamic Debug | Runtime enable/disable debug messages |
+| DebugFS | Exposing debug info via filesystem |
+| Ftrace | Function tracing, call graphs |
+| Kprobes | Dynamic instrumentation without recompiling |
+| KGDB | Kernel debugging with GDB |
+| Oops Analysis | Decoding crash addresses with addr2line |
+| Memory Debugging | KASAN, kmemleak, slub_debug |
+| /proc and /sys | Runtime kernel inspection |
 
 **Key Topics:**
 - Module building (Makefile, insmod/rmmod)
 - Device Tree syntax and binding
+- Device Tree Overlays for runtime hardware config
+- L4T (Linux for Tegra) driver loading on Jetson
 - Concurrency (spinlock vs mutex)
 - Memory-mapped I/O (ioremap, readl/writel)
 - Adding drivers to kernel source tree
+- Complete debugging cheat sheet
 - Common interview Q&A
 
 ### Embedded-Specific Implementations (DSA/)
