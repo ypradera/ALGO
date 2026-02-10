@@ -14,6 +14,34 @@ A comprehensive collection of algorithms and data structures implementations tai
 | `Trees/` | BST operations, traversals (in/pre/post/level), heap/priority queue | C |
 | `Graphs/` | BFS, DFS, Dijkstra's shortest path, Topological Sort, State Machines | C |
 | `RTOS_Primitives/` | Semaphores, Mutexes, Message Queues, Event Flags, Deadlock Prevention | C |
+| `Linux_Kernel_Drivers/` | Complete Linux driver development guide with working examples | C |
+
+### Linux Kernel & Driver Development (Linux_Kernel_Drivers/)
+
+Comprehensive guide for embedded Linux driver development:
+
+| Topic | Description |
+|-------|-------------|
+| Kernel Architecture | User space vs kernel space, driver types |
+| Character Devices | Full char driver with open/read/write/release |
+| IOCTL | Device control commands with _IO/_IOR/_IOW macros |
+| Platform Drivers | Device Tree binding, probe/remove lifecycle |
+| Interrupt Handling | ISR, top-half/bottom-half, workqueues |
+| I2C Drivers | SMBus API, i2c_transfer, sensor examples |
+| SPI Drivers | spi_sync, flash memory example |
+| GPIO | gpiod API, input/output configuration |
+| Memory Management | kmalloc, vmalloc, DMA allocation |
+| Sysfs Interface | Exposing attributes to user space |
+| Firmware Loading | request_firmware API |
+| Debugging | printk, dynamic debug, ftrace |
+
+**Key Topics:**
+- Module building (Makefile, insmod/rmmod)
+- Device Tree syntax and binding
+- Concurrency (spinlock vs mutex)
+- Memory-mapped I/O (ioremap, readl/writel)
+- Adding drivers to kernel source tree
+- Common interview Q&A
 
 ### Embedded-Specific Implementations (DSA/)
 
@@ -125,6 +153,16 @@ python filename.py
 - Mutex with priority inheritance
 - Producer-consumer queues
 - Event flags and deadlock prevention
+
+### Linux Kernel & Drivers
+- Kernel module development (init/exit, Makefile)
+- Character device drivers (file_operations)
+- Platform drivers with Device Tree
+- I2C/SPI/GPIO subsystem drivers
+- Interrupt handling and deferred work
+- Memory management (kmalloc, DMA)
+- User-space interfaces (ioctl, sysfs)
+- Driver debugging techniques
 
 ## License
 
